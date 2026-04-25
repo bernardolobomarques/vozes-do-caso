@@ -1,0 +1,30 @@
+:root {
+  --bg-color: #050907;
+  --panel-bg: #0d1611;
+  --border-color: #193623;
+  --text-main: #d3f0de;
+  --text-dim: #518c69;
+  --accent: #22d369;
+  --accent-glow: rgba(34, 211, 105, 0.4);
+  --danger: #d3223f;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-sans: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  background-image: linear-gradient(rgba(34, 211, 105, 0.03) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(34, 211, 105, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: var(--border-color); }
