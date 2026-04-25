@@ -7,6 +7,7 @@ function App() {
   const audioRef = useRef(null);
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
+  const [showTutorial, setShowTutorial] = useState(true);
 
   const tracks = [
     { id: 1, title: 'DEPOIMENTO: DR. CARLOS LEMOS', date: '13-11-2009', file: '/audio/Dr. Carlos Lemos — Depoimento 2009.mp3', type: 'INQUÉRITO', locked: false },
@@ -16,7 +17,7 @@ function App() {
     { id: 5, title: 'RE-INQUIRIÇÃO: LÚCIA FERNANDES', date: '04-11-2024', file: '/audio/Lúcia Fernandes — Depoimento 2024.mp3', type: 'REABERTURA', locked: false },
     { id: 6, title: 'RE-INQUIRIÇÃO: MARCELO SOUZA', date: '05-11-2024', file: '/audio/Marcelo Souza — Depoimento 2024.mp3', type: 'REABERTURA', locked: false },
     { id: 7, title: 'RE-INQUIRIÇÃO: DR. CARLOS LEMOS', date: '06-11-2024', file: '/audio/Dr. Carlos Lemos — Depoimento 2024.mp3', type: 'REABERTURA', locked: false },
-    { id: 8, title: 'ESCUTA: INTERCEPTAÇÃO TELEFÔNICA (LEMOS)', date: '12-11-2024', file: '/audio/Confissão Final — Dr. Carlos Lemos (Ato 5).mp3', type: 'CONFIDENCIAL', locked: true }
+    { id: 8, title: 'ESCUTA: CONFIDENCIAL / AUTORIA DESCONHECIDA', date: '12-11-2024', file: '/audio/Confissão Final — Dr. Carlos Lemos (Ato 5).mp3', type: 'CONFIDENCIAL', locked: true }
   ];
 
   useEffect(() => {
@@ -43,11 +44,29 @@ function App() {
     }
   };
 
+  const closeTutorial = () => {
+    setShowTutorial(false);
+  };
+
   // Cria barras visuais baseadas no tempo
   const visualBars = Array.from({length: 20});
 
   return (
     <div className="player-container">
+      {showTutorial && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h2>🎙️ Central de Interceptação</h2>
+            <p>Bem-vindo ao gravador do DP17. Aqui estão as transcrições e áudios de Inquérito.</p>
+            <ul>
+              <li>Arquivos de 2009 e os revisados em 2024 estão disponíveis para consulta.</li>
+              <li>Preste atenção às anomalias e mudanças de discurso (inconsistências) em cada gravação.</li>
+              <li>O Arquivo 8 é <strong>CONFIDENCIAL</strong> e requer a senha Master (Nome do Mandante) para desbloqueio final.</li>
+            </ul>
+            <button onClick={closeTutorial} className="btn-ghost">ENTENDIDO, ABRIR SISTEMA</button>
+          </div>
+        </div>
+      )}
       <header>
         <div>
           <h1>SISTEMA DE ESCUTA</h1>
