@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import './App.css'
 
 function App() {
@@ -7,7 +7,9 @@ function App() {
   const audioRef = useRef(null);
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
-  const [showTutorial, setShowTutorial] = useState(true);
+  
+  // Terminal Boot sequence
+  const [bootStep, setBootStep] = useState(0);
 
   const tracks = [
     { id: 1, title: 'DEPOIMENTO: DR. CARLOS LEMOS', date: '13-11-2009', file: '/audio/Dr. Carlos Lemos — Depoimento 2009.mp3', type: 'INQUÉRITO', locked: false },
@@ -19,6 +21,16 @@ function App() {
     { id: 7, title: 'RE-INQUIRIÇÃO: DR. CARLOS LEMOS', date: '06-11-2024', file: '/audio/Dr. Carlos Lemos — Depoimento 2024.mp3', type: 'REABERTURA', locked: false },
     { id: 8, title: 'ESCUTA: CONFIDENCIAL / AUTORIA DESCONHECIDA', date: '12-11-2024', file: '/audio/Confissão Final — Dr. Carlos Lemos (Ato 5).mp3', type: 'CONFIDENCIAL', locked: true }
   ];
+
+  useEffect(() => {
+    // Diegetic boot sequence animation
+    if (bootStep < 3) {
+      const timer = setTimeout(() => {
+        setBootStep(prev => prev + 1);
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [bootStep]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -39,41 +51,38 @@ function App() {
     if (passwordInput.toUpperCase() === 'LEMOS') {
       setUnlocked(true);
       setPasswordInput('');
+      localStorage.setItem('ev_escuta', 'true');
     } else {
       alert("ACESSO NEGADO: CHAVE INCOMPATÍVEL.");
     }
   };
 
-  const closeTutorial = () => {
-    setShowTutorial(false);
-  };
+  // Cria barras visuais baseadas no tempo fixadas no useMemo (Resolve tremor feio)
+  const visualBars = useMemo(() => {
+    return Array.from({length: 20}, () => Math.floor(Math.random() * 80) + 10);
+  }, [activeTrack, isPlaying]); // Atualiza só quando o play muda, sem tremer no React loop
 
-  // Cria barras visuais baseadas no tempo
-  const visualBars = Array.from({length: 20});
+  if (bootStep < 3) {
+    return (
+      <div className="player-container boot-screen">
+        <div style={{fontFamily: 'var(--font-mono)', color: 'var(--accent)', padding: '40px', fontSize: '1.2rem'}}>
+          {bootStep === 0 && '> INICIANDO CONEXÃO SEGURA...'}
+          {bootStep === 1 && '> CARREGANDO ARQUIVOS DE ÁUDIO DE INQUÉRITO...'}
+          {bootStep === 2 && '> ACESSO AUTORIZADO. DESCRIPTOGRAFANDO...'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="player-container">
-      {showTutorial && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h2>🎙️ Central de Interceptação</h2>
-            <p>Bem-vindo ao gravador do DP17. Aqui estão as transcrições e áudios de Inquérito.</p>
-            <ul>
-              <li>Arquivos de 2009 e os revisados em 2024 estão disponíveis para consulta.</li>
-              <li>Preste atenção às anomalias e mudanças de discurso (inconsistências) em cada gravação.</li>
-              <li>O Arquivo 8 é <strong>CONFIDENCIAL</strong> e requer a senha Master (Nome do Mandante) para desbloqueio final.</li>
-            </ul>
-            <button onClick={closeTutorial} className="btn-ghost">ENTENDIDO, ABRIR SISTEMA</button>
-          </div>
-        </div>
-      )}
       <header>
         <div>
           <h1>SISTEMA DE ESCUTA</h1>
           <div className="system-id">DP17::DEPARTAMENTO_DE_POLÍCIA::PROJETO_CASO_FRIO</div>
         </div>
         <div>
-          <img src="../../images/9.png" alt="Logo DP" width="60" style={{filter: 'grayscale(100%) brightness(200%)'}} />
+          <img src="./images/9.png" alt="Logo DP" width="60" style={{filter: 'grayscale(100%) brightness(200%)'}} />
         </div>
       </header>
 
@@ -102,13 +111,13 @@ function App() {
           </div>
 
           <div className={`visualizer-mock ${isPlaying ? 'playing' : ''}`}>
-            {visualBars.map((_, i) => (
+            {visualBars.map((height, i) => (
               <div 
                 key={i} 
                 className="bar" 
                 style={{
-                  height: isPlaying ? `${Math.floor(Math.random() * 80) + 10}%` : '10%',
-                  transitionDuration: `${Math.random() * 0.3 + 0.1}s`
+                  height: isPlaying ? `${height}%` : '10%',
+                  transitionDuration: '0.2s'
                 }}
               />
             ))}
@@ -123,7 +132,7 @@ function App() {
             />
           </div>
 
-          {!unlocked && (
+          {activeTrack?.id === 8 && !unlocked && (
             <div className="locked-overlay">
               <p style={{color: 'var(--danger)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem'}}>ARQUIVO 8 EXIGE OVERRIDE MESTRE</p>
               <input 
@@ -131,6 +140,7 @@ function App() {
                 placeholder="INSIRA AUTORIA" 
                 value={passwordInput}
                 onChange={e => setPasswordInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleUnlock()}
               />
               <button onClick={handleUnlock}>DECRIPTAR</button>
             </div>
